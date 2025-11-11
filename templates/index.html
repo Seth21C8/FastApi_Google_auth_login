@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
+    <link rel = "stylesheet" href = "/static/css/index.css">
+    <title>Home page</title>
+</head>
+<body>
+    {% if not user %}
+        <p class = "Wel">Welcome</p>
+    {% else %}
+        <div class = "Wel">
+            <p>Welcome back user</p>
+            <a href = "/drive">Google Drive</a>
+            <a href = "/contact">Google Contact</a>
+        </div>
+    {% endif %}
+
+
+    {% if not user %}
+        <input type = "checkbox" id = "toggle-form">
+    {% endif %}
+
+    <div class = "top_page">
+    {% if not user %}
+        <div class = "Log-button">
+            <label for = "toggle-form" class = "login">Login</label>
+        </div>
+    {% else %}
+        <div class = "profile">
+            <a href ="/profile">
+                <img src = "{{ user['picture'] }}" alt = "Profile-pic" class = "image">
+            </a>
+    {% endif %}
+
+        </div>
+    </div>
+    
+    <!-- Login container -->
+    {% if not user %}
+    <form action = "#" class = "log-form" method = "">
+        <div class = "container">
+                <label for = "toggle-form" class = "close-btn">x</label>
+                <h2>Login</h2>
+                <a href = "/login" class = "went-gle">
+                    <img src = "/static/images/Google.png" alt = "google-logo" class = "g-logo">Login with Google
+                </a>
+        </div>
+    </form>
+    <div class = "overlay"></div>
+    {% endif %}
+
+</body>
+</html>

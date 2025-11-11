@@ -1,0 +1,25 @@
+.back{
+    text-decoration: none;
+    color: black;
+}
+.back:hover{
+    text-decoration: underline;
+}
+table{
+    border-collapse: collapse;
+    width: 40%;
+}
+th, td{
+    border: 1px solid black;
+}
+.files{
+    text-decoration: none;
+    color: black;
+}
+.files::after{
+    color: #0000ff;
+    text-decoration: underline;
+}
+.files:hover::after{
+    width: 100%;
+}

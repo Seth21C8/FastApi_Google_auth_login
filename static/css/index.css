@@ -1,0 +1,125 @@
+body{
+    background-color: rgba(255, 228, 196, 0.681);
+}
+.Wel{
+    margin-top: 60px;
+}
+
+.top_page{
+    position: fixed;
+    overflow: hidden;
+    height: 45px;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: rgb(0, 213, 255);
+    align-items: center;
+}
+#toggle-form{
+    display: none;
+}
+
+/* login Part*/
+.Log-button{
+    display: flex;
+    justify-content: right;
+    /* height: 3.2vh; */
+}
+.login{
+    padding: 6px;
+    margin-right: 12px;
+    margin-top: 7.5px;
+    text-decoration: none;
+    color: black;
+    background-color: white;
+    border-radius: 15px;
+    font-size: 15px;
+}
+.login:hover{
+    cursor: pointer;
+    background-color: rgb(210, 210, 210);
+}
+
+/*Profile*/
+.profile{
+    display: flex;
+    justify-content: right;
+}
+.image{
+    width: 40px;
+    height: 40px;
+    border-radius: 25px;
+    margin-right: 12px;
+    margin-top: 2px;
+}
+
+/*Login Box*/
+.log-form{
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border-radius: 12px;
+    z-index: 2;
+}
+#toggle-form:checked ~ .log-form, #toggle-form:checked ~ .overlay{
+    display: block;
+}
+.close-btn{
+    cursor: pointer;
+    position: absolute;
+    padding: 1px 5px;
+    right: 7px;
+    font-size: 20px;
+}
+.close-btn:hover{
+    color: rgba(0, 0, 0, 0.661);
+}
+.container{
+    display: grid;
+    grid-row: auto;
+    width: 250px;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid black;
+}
+.container h2{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.went-gle{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    color: black;
+    width: 150px;
+    padding: 4px;
+    border: 1px solid black;
+    margin-left: 45px; /*21%*/
+    margin: 7px 5px 7px 45px;
+    border-radius: 8px;
+}
+.went-gle:hover{
+    background-color: rgba(0, 0, 0, 0.01);
+}
+.g-logo{
+    width: 16px;
+    height: 16px;
+    border-radius: 25px;
+    overflow: hidden;
+    margin-right: 5px;
+}
+.overlay{
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.249);
+}

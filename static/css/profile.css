@@ -1,0 +1,17 @@
+body{
+    background-color: rgba(255, 228, 196, 0.681);
+}
+.back{
+    text-decoration: none;
+    color: black;
+}
+.back:hover{
+    text-decoration: underline;
+}
+.logout{
+    text-decoration: none;
+    color: red;
+}
+.logout:hover{
+    color: rgb(205, 0, 0);
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel = "stylesheet" href = "/static/css/drive.css">
+</head>
+<body>
+    <a href = "/" class = "back">&larr; Back</a>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Content Type</th>
+        </tr>
+        {% for item in files %}
+        <tr>
+            <td>
+                <a href = "{{ item.webViewLink }}" class = "files" target = "_blank">{{ item.name }}</a>
+            </td>
+            <td>{{ item.mimeType }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

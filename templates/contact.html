@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact</title>
+    <link rel = "stylesheet" href = "/static/css/contact.css">
+</head>
+<body>
+    <a href = "/" class = "back">&larr; Back</a>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone Number</th>
+        </tr>
+    {% if connections %}
+    {% for contact in connections %}
+        <tr>
+            <td>{{ contact.names[0].displayName if contact.names else "N/A"}}</td>
+            <td>{{ contact.emailAddresses[0].value if contact.emailAddresses else "N/A" }}</td>
+            <td>{{ contact.phoneNumbers[0].value if contact.phoneNumbers else "N/A"}}</td>
+        </tr>
+    {% endfor %}
+    {% else %}
+        <p>No contact</p>
+    {% endif %}
+    </table>
+</body>
+</html>
