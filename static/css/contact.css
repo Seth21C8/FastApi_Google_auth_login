@@ -7,8 +7,35 @@
 }
 table{
     border-collapse: collapse;
-    width: 30%;
+}
+.header{
+    text-align: left;
+}
+.contact_name{
+    width: 45%;
+}
+.email{
+    width: 25%;
+}
+.phone_number{
+    width: 25%;
 }
 th, td{
-    border: 1px solid black;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 5px;
+}
+tr:first-child td{
+    border: none;
+}
+tr:last-child td{
+    border: none;
+}
+.data{
+    color: black;
+}
+.data:hover{
+    background-color: rgba(0, 0, 0, 0.1);
+}
+.data:active{
+    background-color: rgba(0, 0, 0, 0.2);
 }

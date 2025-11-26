@@ -7,11 +7,15 @@
 }
 table{
     border-collapse: collapse;
-    width: 40%;
+    width: auto;
 }
-th, td{
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
+th{
+    text-align: left;
+}
+td{
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 5px;
 }
 tr:first-child td{
     border-left:none;
@@ -23,10 +27,7 @@ tr:last-child td{
     text-decoration: none;
     color: black;
 }
-.files::after{
+.files:hover{
     color: #0000ff;
     text-decoration: underline;
-}
-.files:hover::after{
-    width: 100%;
 }

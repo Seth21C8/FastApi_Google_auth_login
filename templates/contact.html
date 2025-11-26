@@ -9,17 +9,17 @@
 <body>
     <a href = "/" class = "back">&larr; Back</a>
     <table>
-        <tr>
+        <tr class = "header">
             <th>Name</th>
             <th>Email</th>
             <th>Phone Number</th>
         </tr>
     {% if connections %}
     {% for contact in connections %}
-        <tr>
-            <td>{{ contact.names[0].displayName if contact.names else "N/A"}}</td>
-            <td>{{ contact.emailAddresses[0].value if contact.emailAddresses else "N/A" }}</td>
-            <td>{{ contact.phoneNumbers[0].value if contact.phoneNumbers else "N/A"}}</td>
+        <tr class = "data">
+            <td class = "contact_name">{{ contact.names[0].displayName if contact.names else "N/A"}}</td>
+            <td class = "email">{{ contact.emailAddresses[0].value if contact.emailAddresses else "N/A" }}</td>
+            <td class = "phone_number">{{ contact.phoneNumbers[0].value if contact.phoneNumbers else "N/A"}}</td>
         </tr>
     {% endfor %}
     {% else %}
