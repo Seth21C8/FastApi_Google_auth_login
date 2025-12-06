@@ -6,6 +6,8 @@
     text-decoration: underline;
 }
 table{
+    margin-top: 15px;
+    margin-left: 10px;
     border-collapse: collapse;
     width: auto;
 }
@@ -15,13 +17,19 @@ th{
 td{
     border-top: 1px solid rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-    padding: 5px;
+    padding: 6px;
 }
 tr:first-child td{
     border-left:none;
 }
 tr:last-child td{
     border-right:none;
+}
+.data{
+    color: black;
+}
+.data:hover{
+    background-color: rgba(0, 0, 0, 0.1);
 }
 .files{
     text-decoration: none;

@@ -4,7 +4,14 @@ body{
 .Wel{
     margin-top: 60px;
 }
-
+.Wel a{
+    border: 1px solid black;
+    border-radius: 15px;
+    padding: 2px;
+    text-decoration: none;
+    background-color: #0066ff;
+    color: white;
+}
 .top_page{
     position: fixed;
     overflow: hidden;

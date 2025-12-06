@@ -26,7 +26,7 @@ async def get_token(request: Request):
     
     if token.get("expires_at", 0) < time.time():
         try:
-            new_token = await oauth.google.refresh_token(#type: ignore
+            new_token = await oauth.google.refresh_token(
                 "https://oauth2.googleapis.com/token",
                 refresh_token = token["refresh_token"]
             )
@@ -66,7 +66,10 @@ def profile(request: Request):
 @app.get("/login")
 async def login(request: Request):
     redirect_uri = request.url_for("auth_callback")
-    return await oauth.google.authorize_redirect(request, redirect_uri, access_type = "offline", prompt = "consent") #type: ignore
+    if request.session.get("token"):
+        return await oauth.google.authorize_redirect(request, redirect_uri, access_type = "offline", prompt = "none", include_granted_scopes = "true")
+    
+    return await oauth.google.authorize_redirect(request, redirect_uri, access_type = "offline", prompt = "consent", include_granted_scopes = "true")
 
 @app.get("/logout")
 def logout(request: Request):
@@ -75,8 +78,8 @@ def logout(request: Request):
 
 @app.get("/auth/callback", name = "auth_callback")
 async def auth(request: Request):
-    token = await oauth.google.authorize_access_token(request) #type: ignore
-    userinfo = await oauth.google.get("https://openidconnect.googleapis.com/v1/userinfo", token = token)#type: ignore
+    token = await oauth.google.authorize_access_token(request)
+    userinfo = await oauth.google.get("https://openidconnect.googleapis.com/v1/userinfo", token = token)
     user = userinfo.json()
     request.session["token"] = token
     request.session["user"] = user
@@ -107,7 +110,7 @@ async def contacts(request: Request):
     token = await get_token(request)
     if not token:
         return RedirectResponse(url = "/login")
-    contact = await oauth.google.get( #type: ignore
+    contact = await oauth.google.get(
         "https://people.googleapis.com/v1/people/me/connections",
         params = {"personFields": "names,emailAddresses,phoneNumbers",
                   "pageSize": 15,
