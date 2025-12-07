@@ -12,30 +12,29 @@ from dotenv import load_dotenv
 app = FastAPI()
 load_dotenv()
 
-app.add_middleware(SessionMiddleware, secret_key = os.getenv("SECRET_KEY") or "Default_Secret_Key")
+app.add_middleware(SessionMiddleware, secret_key = os.getenv("SECRET_KEY"))
 
 templates = Jinja2Templates(directory = "templates")
 app.mount("/static", StaticFiles(directory = "static"), name = "static")
 app.mount("/static/images", StaticFiles(directory = "static/images"), name = "images")
 
-#get token / refresh token
-async def get_token(request: Request):
+#renew token / refresh token
+async def renew_token(request: Request):
     token = request.session.get("token")
-    if not token:
-        return None
-    
-    if token.get("expires_at", 0) < time.time():
+    token_time = token.get("expires_time", 0)
+    if token_time < time.time():
         try:
-            new_token = await oauth.google.refresh_token(
+            recent_token = await oauth.google.refresh.token(
                 "https://oauth2.googleapis.com/token",
                 refresh_token = token["refresh_token"]
             )
-            request.session["token"] = new_token
-            token = new_token
-        except:
+            if "expires_time" in recent_token:
+                recent_token["expires_time"] = time.time() + recent_token["expires_in"]
+            request.session["token"] = recent_token
+            token = recent_token
+        except Exception as e:
             return None
     return token
-
 #Register Client
 oauth = OAuth()
 oauth.register(
@@ -51,24 +50,23 @@ oauth.register(
 #Home page
 @app.get("/", response_class = HTMLResponse)
 async def home_page(request: Request):
-    user = request.session.get("user")
-    return templates.TemplateResponse("index.html", {"request": request, "user": user})
+    user = request.session.get("user_data")
+    return templates.TemplateResponse("index.html", {"request": request, "user_data": user})
 
 #Profile page
 @app.get("/profile", response_class = HTMLResponse)
 def profile(request: Request):
-    user = request.session.get("user")
+    user = request.session.get("user_data")
     if not user:
         return RedirectResponse(url = "/")
-    return templates.TemplateResponse("profile.html", {"request": request, "user": user})
+    return templates.TemplateResponse("profile.html", {"request": request, "user_data": user})
 
 #Function
 @app.get("/login")
 async def login(request: Request):
     redirect_uri = request.url_for("auth_callback")
-    if request.session.get("token"):
-        return await oauth.google.authorize_redirect(request, redirect_uri, access_type = "offline", prompt = "none", include_granted_scopes = "true")
-    
+    # if request.session.get("token"):
+    #     return await oauth.google.authorize_redirect(request, redirect_uri, access_type = "offline", prompt = "none", include_granted_scopes = "true")   
     return await oauth.google.authorize_redirect(request, redirect_uri, access_type = "offline", prompt = "consent", include_granted_scopes = "true")
 
 @app.get("/logout")
@@ -79,17 +77,19 @@ def logout(request: Request):
 @app.get("/auth/callback", name = "auth_callback")
 async def auth(request: Request):
     token = await oauth.google.authorize_access_token(request)
+    if "expires_in" in token:
+        token["expires_at"] = time.time() + token["expires_in"]
     userinfo = await oauth.google.get("https://openidconnect.googleapis.com/v1/userinfo", token = token)
     user = userinfo.json()
     request.session["token"] = token
-    request.session["user"] = user
+    request.session["user_data"] = user
     response = RedirectResponse(url = "/")
     return response
 
 # Google Drive
 @app.get("/drive")
 async def drive(request: Request):
-    token = await get_token(request)
+    token = await renew_token(request)
     if not token:
         return RedirectResponse(url = "/login")
     drive_files = await oauth.google.get( #type:ignore
@@ -102,12 +102,12 @@ async def drive(request: Request):
     )
     data = drive_files.json()
     files = data.get("files", [])
-    npt = data.get("nextPageToken")
-    return templates.TemplateResponse("drive.html", {"request": request, "files": files, "nextPageToken": npt})
+    next_page_token = data.get("nextPageToken")
+    return templates.TemplateResponse("drive.html", {"request": request, "files": files, "nextPageToken": next_page_token})
 
 @app.get("/contact")
 async def contacts(request: Request):
-    token = await get_token(request)
+    token = await renew_token(request)
     if not token:
         return RedirectResponse(url = "/login")
     contact = await oauth.google.get(
@@ -120,6 +120,6 @@ async def contacts(request: Request):
     )
     data = contact.json()
     contact_list = data.get("connections", [])
-    npt = data.get("nextPageToken")
+    next_page_token = data.get("nextPageToken")
 
-    return templates.TemplateResponse("contact.html", {"request": request, "connections": contact_list, "nextPageToken": npt})
+    return templates.TemplateResponse("contact.html", {"request": request, "connections": contact_list, "nextPageToken": next_page_token})
