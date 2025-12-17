@@ -1,11 +1,12 @@
 import os
 import time
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.responses  import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
+from authlib.integrations.base_client import OAuthError
 from dotenv import load_dotenv
 
 
@@ -19,22 +20,21 @@ app.mount("/static", StaticFiles(directory = "static"), name = "static")
 app.mount("/static/images", StaticFiles(directory = "static/images"), name = "images")
 
 #renew token / refresh token
-async def renew_token(request: Request):
+async def New_token(request: Request):
     token = request.session.get("token")
-    token_time = token.get("expires_time", 0)
-    if token_time < time.time():
+    if token.get("expires_at", 0) < time.time():
         try:
-            recent_token = await oauth.google.refresh.token(
+            recent_token = await oauth.google.refresh_token(
                 "https://oauth2.googleapis.com/token",
                 refresh_token = token["refresh_token"]
             )
-            if "expires_time" in recent_token:
-                recent_token["expires_time"] = time.time() + recent_token["expires_in"]
+            recent_token["expires_at"] = time.time() + recent_token["expires_in"]
             request.session["token"] = recent_token
             token = recent_token
         except Exception as e:
             return None
     return token
+
 #Register Client
 oauth = OAuth()
 oauth.register(
@@ -43,31 +43,43 @@ oauth.register(
     client_id = os.getenv("GOOGLE_CLIENT_ID"),
     client_secret = os.getenv("GOOGLE_CLIENT_SECRET"),
     client_kwargs = {
-        "scope": ("openid profile email https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/contacts.readonly") 
+        "scope": ("openid profile email https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/contacts.readonly")
     }
 )
 
 #Home page
 @app.get("/", response_class = HTMLResponse)
 async def home_page(request: Request):
-    user = request.session.get("user_data")
-    return templates.TemplateResponse("index.html", {"request": request, "user_data": user})
+    user = request.session.get("user")
+    return templates.TemplateResponse("index.html", {"request": request, "user": user})
 
 #Profile page
 @app.get("/profile", response_class = HTMLResponse)
 def profile(request: Request):
-    user = request.session.get("user_data")
+    user = request.session.get("user")
     if not user:
         return RedirectResponse(url = "/")
-    return templates.TemplateResponse("profile.html", {"request": request, "user_data": user})
+    return templates.TemplateResponse("profile.html", {"request": request, "user": user})
 
 #Function
 @app.get("/login")
-async def login(request: Request):
+async def login(request: Request, force: str = Query(None)):
     redirect_uri = request.url_for("auth_callback")
-    # if request.session.get("token"):
-    #     return await oauth.google.authorize_redirect(request, redirect_uri, access_type = "offline", prompt = "none", include_granted_scopes = "true")   
-    return await oauth.google.authorize_redirect(request, redirect_uri, access_type = "offline", prompt = "consent", include_granted_scopes = "true")
+    cookie = request.cookies.get("google_consented")
+    had_token = bool(request.session.get("token"))
+    if force:
+        prompt = "consent"
+    elif cookie or had_token:
+        prompt = "none"
+    else:
+        prompt = "consent"
+    return await oauth.google.authorize_redirect(
+        request, 
+        redirect_uri, 
+        access_type = "offline", 
+        prompt = prompt, 
+        include_granted_scopes = "true"
+    )
 
 @app.get("/logout")
 def logout(request: Request):
@@ -76,20 +88,22 @@ def logout(request: Request):
 
 @app.get("/auth/callback", name = "auth_callback")
 async def auth(request: Request):
-    token = await oauth.google.authorize_access_token(request)
-    if "expires_in" in token:
-        token["expires_at"] = time.time() + token["expires_in"]
-    userinfo = await oauth.google.get("https://openidconnect.googleapis.com/v1/userinfo", token = token)
-    user = userinfo.json()
-    request.session["token"] = token
-    request.session["user_data"] = user
-    response = RedirectResponse(url = "/")
+    try:
+        token = await oauth.google.authorize_access_token(request)
+        userinfo = await oauth.google.get("https://openidconnect.googleapis.com/v1/userinfo", token = token)
+        user = userinfo.json()
+        request.session["token"] = token
+        request.session["user"] = user
+        response = RedirectResponse(url = "/")
+        response.set_cookie(key = "google_consented", value = "true", httponly = True, age = "31536000")
+    except OAuthError as e:
+        return {"error": str(e)}
     return response
 
 # Google Drive
 @app.get("/drive")
 async def drive(request: Request):
-    token = await renew_token(request)
+    token = await New_token(request)
     if not token:
         return RedirectResponse(url = "/login")
     drive_files = await oauth.google.get( #type:ignore
@@ -107,7 +121,7 @@ async def drive(request: Request):
 
 @app.get("/contact")
 async def contacts(request: Request):
-    token = await renew_token(request)
+    token = await New_token(request)
     if not token:
         return RedirectResponse(url = "/login")
     contact = await oauth.google.get(
