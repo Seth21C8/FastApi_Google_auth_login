@@ -19,19 +19,19 @@ templates = Jinja2Templates(directory = "templates")
 app.mount("/static", StaticFiles(directory = "static"), name = "static")
 app.mount("/static/images", StaticFiles(directory = "static/images"), name = "images")
 
-#renew token / refresh token
+#New token / refresh token
 async def New_token(request: Request):
     token = request.session.get("token")
     if token.get("expires_at", 0) < time.time():
         try:
-            recent_token = await oauth.google.refresh_token(
+            fresh_token = await oauth.google.refresh_token(
                 "https://oauth2.googleapis.com/token",
                 refresh_token = token["refresh_token"]
             )
-            recent_token["expires_at"] = time.time() + recent_token["expires_in"]
-            request.session["token"] = recent_token
-            token = recent_token
-        except Exception as e:
+            fresh_token["expires_at"] = time.time() + fresh_token.get("expires_in", 3600)
+            request.session["token"] = fresh_token
+            token = fresh_token
+        except Exception:
             return None
     return token
 
@@ -43,7 +43,7 @@ oauth.register(
     client_id = os.getenv("GOOGLE_CLIENT_ID"),
     client_secret = os.getenv("GOOGLE_CLIENT_SECRET"),
     client_kwargs = {
-        "scope": ("openid profile email https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/contacts.readonly")
+        "scope": "openid profile email https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/contacts.readonly"
     }
 )
 
@@ -95,7 +95,7 @@ async def auth(request: Request):
         request.session["token"] = token
         request.session["user"] = user
         response = RedirectResponse(url = "/")
-        response.set_cookie(key = "google_consented", value = "true", httponly = True, age = "31536000")
+        response.set_cookie(key = "google_consented", value = "true", httponly = True, max_age = 31536000, samesite = "lax")
     except OAuthError as e:
         return {"error": str(e)}
     return response
